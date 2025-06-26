@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -89,7 +88,7 @@ const Index = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 p-6 pb-20">
+        <div className="flex-1 p-6 pb-16">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 mb-4">
@@ -208,39 +207,6 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-45 transform translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm"></div>
             </div>
-          </div>
-        </div>
-
-        {/* Personality Selection */}
-        <div className="mb-8">
-          <h3 className={`text-center text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-6`}>Choose Your Mentor</h3>
-          <div className="flex justify-center space-x-4">
-            {personalities.map((personality) => (
-              <div
-                key={personality.id}
-                className={`cursor-pointer transition-all duration-300 ${
-                  selectedPersonality === personality.id ? 'scale-110' : 'scale-100 hover:scale-105'
-                }`}
-                onClick={() => setSelectedPersonality(personality.id)}
-              >
-                <div className={`w-16 h-16 rounded-full ${personality.color} flex items-center justify-center relative ${
-                  selectedPersonality === personality.id ? 'ring-4 ring-white/30' : ''
-                }`}>
-                  <div className="w-8 h-8 rounded-full bg-white/30"></div>
-                  {selectedPersonality === personality.id && (
-                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full"></div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-4">
-            <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              {personalities.find(p => p.id === selectedPersonality)?.name}
-            </p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {personalities.find(p => p.id === selectedPersonality)?.description}
-            </p>
           </div>
         </div>
 
