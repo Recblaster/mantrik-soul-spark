@@ -78,7 +78,7 @@ const Index = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 p-6 pb-24">
+        <div className="flex-1 p-6 pb-16">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 mb-4">
@@ -90,9 +90,9 @@ const Index = () => {
         </div>
 
         {/* Chat Input */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
           <div className="max-w-3xl mx-auto">
-            <div className="flex space-x-4">
+            <div className="flex items-center p-2">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -102,7 +102,7 @@ const Index = () => {
               />
               <Button
                 onClick={handleSendMessage}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                className="ml-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
               >
                 <Send className="h-4 w-4" />
               </Button>
