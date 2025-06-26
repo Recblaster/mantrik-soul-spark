@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Moon, Sun, MessageCircle, History, User, Send } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Moon, Sun, MessageCircle, History, User, Send, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Personality {
@@ -51,53 +52,103 @@ const Index = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const handlePersonalityChange = (personalityId: string) => {
+    setSelectedPersonality(personalityId);
+    toast({
+      title: "Personality Changed",
+      description: `Switched to ${personalities.find(p => p.id === personalityId)?.name}`,
+    });
+  };
+
   if (isInSession) {
     return (
       <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-800">
+        <div className={`flex justify-between items-center p-6 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsInSession(false)}
-              className="text-purple-400 hover:text-purple-300"
+              className={`${isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-500'}`}
             >
               ← Back
             </Button>
-            <h1 className="text-xl font-semibold text-white">Session with {personalities.find(p => p.id === selectedPersonality)?.name}</h1>
+            <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Session with {personalities.find(p => p.id === selectedPersonality)?.name}
+            </h1>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleDarkMode}
-            className="text-gray-400 hover:text-white"
+            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 p-6 pb-16">
+        <div className="flex-1 p-6 pb-20">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse"></div>
               </div>
-              <p className="text-gray-400">How are you feeling today? I'm here to listen and guide you.</p>
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                How are you feeling today? I'm here to listen and guide you.
+              </p>
             </div>
           </div>
         </div>
 
+        {/* Presets Button */}
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              side="top" 
+              className={`mb-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+            >
+              {personalities.slice(0, 3).map((personality) => (
+                <DropdownMenuItem
+                  key={personality.id}
+                  onClick={() => handlePersonalityChange(personality.id)}
+                  className={`cursor-pointer ${
+                    selectedPersonality === personality.id 
+                      ? 'bg-purple-100 dark:bg-purple-900/30' 
+                      : ''
+                  } ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-100'}`}
+                >
+                  <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
+                  <div>
+                    <div className="font-medium">{personality.name}</div>
+                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {personality.description}
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Chat Input */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
+        <div className={`fixed bottom-0 left-0 right-0 p-4 ${isDarkMode ? 'bg-gray-900/80' : 'bg-white/80'} backdrop-blur-sm border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center p-2">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="How are you feeling?"
-                className="flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500"
+                className={`flex-1 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500'} focus:ring-purple-500 focus:border-purple-500`}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               />
               <Button
@@ -124,7 +175,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <History className="h-5 w-5 mr-2" />
             Sessions
@@ -132,7 +183,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <User className="h-5 w-5 mr-2" />
             Profile
@@ -141,7 +192,7 @@ const Index = () => {
             variant="ghost"
             size="sm"
             onClick={toggleDarkMode}
-            className="text-gray-400 hover:text-white"
+            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -162,7 +213,7 @@ const Index = () => {
 
         {/* Personality Selection */}
         <div className="mb-8">
-          <h3 className="text-center text-lg font-medium text-gray-300 mb-6">Choose Your Mentor</h3>
+          <h3 className={`text-center text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-6`}>Choose Your Mentor</h3>
           <div className="flex justify-center space-x-4">
             {personalities.map((personality) => (
               <div
@@ -184,21 +235,21 @@ const Index = () => {
             ))}
           </div>
           <div className="text-center mt-4">
-            <p className="text-white font-medium">
+            <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {personalities.find(p => p.id === selectedPersonality)?.name}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {personalities.find(p => p.id === selectedPersonality)?.description}
             </p>
           </div>
         </div>
 
         {/* Chat Input Placeholder */}
-        <Card className="w-full max-w-2xl bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+        <Card className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
           <div className="flex items-center p-4">
             <Input
               placeholder="How are you feeling?"
-              className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:ring-0 focus:outline-none"
+              className={`flex-1 bg-transparent border-none ${isDarkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'} focus:ring-0 focus:outline-none`}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleStartSession()}
@@ -212,7 +263,7 @@ const Index = () => {
           </div>
         </Card>
 
-        <p className="text-gray-400 text-sm mt-6 text-center max-w-md">
+        <p className={`text-sm mt-6 text-center max-w-md ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           Start a conversation with your AI mentor. Share your thoughts, feelings, or ask for guidance.
         </p>
       </div>
