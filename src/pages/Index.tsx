@@ -175,7 +175,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
           >
             <History className="h-5 w-5 mr-2" />
             Sessions
@@ -183,7 +183,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
           >
             <User className="h-5 w-5 mr-2" />
             Profile
@@ -192,7 +192,7 @@ const Index = () => {
             variant="ghost"
             size="sm"
             onClick={toggleDarkMode}
-            className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
           >
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -244,24 +244,65 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Chat Input Placeholder */}
-        <Card className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
-          <div className="flex items-center p-4">
-            <Input
-              placeholder="How are you feeling?"
-              className={`flex-1 bg-transparent border-none ${isDarkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'} focus:ring-0 focus:outline-none`}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleStartSession()}
-            />
-            <Button
-              onClick={handleStartSession}
-              className="ml-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
-            >
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+        {/* Chat Input with Presets Button */}
+        <div className="relative w-full max-w-2xl">
+          {/* Presets Button - positioned absolutely above the input */}
+          <div className="absolute -top-16 left-4 z-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                side="bottom" 
+                className={`mt-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+              >
+                {personalities.slice(0, 3).map((personality) => (
+                  <DropdownMenuItem
+                    key={personality.id}
+                    onClick={() => handlePersonalityChange(personality.id)}
+                    className={`cursor-pointer ${
+                      selectedPersonality === personality.id 
+                        ? 'bg-purple-100 dark:bg-purple-900/30' 
+                        : ''
+                    } ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-100'}`}
+                  >
+                    <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
+                    <div>
+                      <div className="font-medium">{personality.name}</div>
+                      <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {personality.description}
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </Card>
+
+          {/* Chat Input */}
+          <Card className={`${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
+            <div className="flex items-center p-4">
+              <Input
+                placeholder="How are you feeling?"
+                className={`flex-1 bg-transparent border-none ${isDarkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'} focus:ring-0 focus:outline-none`}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleStartSession()}
+              />
+              <Button
+                onClick={handleStartSession}
+                className="ml-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        </div>
 
         <p className={`text-sm mt-6 text-center max-w-md ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           Start a conversation with your AI mentor. Share your thoughts, feelings, or ask for guidance.
