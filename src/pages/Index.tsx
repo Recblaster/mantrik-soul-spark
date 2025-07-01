@@ -32,14 +32,16 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Auth state:', { user: !!user, loading });
     if (!loading && !user) {
+      console.log('No user found, redirecting to landing page');
       navigate('/');
     }
   }, [user, loading, navigate]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -83,15 +85,15 @@ const Index = () => {
 
   if (isInSession) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-800 bg-gray-900/50">
+        <div className="flex justify-between items-center p-6 border-b border-white/20 bg-white/5 backdrop-blur-sm">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsInSession(false)}
-              className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20"
+              className="text-purple-300 hover:text-white hover:bg-white/10"
             >
               ← Back
             </Button>
@@ -104,7 +106,7 @@ const Index = () => {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="text-gray-400 hover:text-white hover:bg-gray-800"
+              className="text-purple-300 hover:text-white hover:bg-white/10"
             >
               <LogOut className="h-5 w-5" />
             </Button>
@@ -115,10 +117,10 @@ const Index = () => {
         <div className="flex-1 p-6 pb-16">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 mb-4 shadow-2xl">
                 <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse"></div>
               </div>
-              <p className="text-gray-300 text-lg">
+              <p className="text-purple-100 text-lg">
                 How are you feeling today? I'm here to listen and guide you.
               </p>
             </div>
@@ -131,14 +133,14 @@ const Index = () => {
             <DropdownMenuTrigger asChild>
               <Button
                 size="icon"
-                className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
               >
                 <Settings className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               side="top" 
-              className="mb-2 bg-gray-800 border-gray-700"
+              className="mb-2 bg-white/10 border-white/20 backdrop-blur-md"
             >
               {personalities.slice(0, 3).map((personality) => (
                 <DropdownMenuItem
@@ -146,14 +148,14 @@ const Index = () => {
                   onClick={() => handlePersonalityChange(personality.id)}
                   className={`cursor-pointer ${
                     selectedPersonality === personality.id 
-                      ? 'bg-purple-900/30' 
+                      ? 'bg-white/20' 
                       : ''
-                  } text-gray-200 hover:bg-gray-700`}
+                  } text-white hover:bg-white/15`}
                 >
                   <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
                   <div>
                     <div className="font-medium">{personality.name}</div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-purple-200">
                       {personality.description}
                     </div>
                   </div>
@@ -164,19 +166,19 @@ const Index = () => {
         </div>
 
         {/* Chat Input */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/90 backdrop-blur-sm border-t border-gray-800">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/5 backdrop-blur-sm border-t border-white/20">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center p-2">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="How are you feeling?"
-                className="flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500"
+                className="flex-1 bg-white/10 border-white/20 text-white placeholder-purple-300 focus:ring-purple-400 focus:border-purple-400 backdrop-blur-sm"
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               />
               <Button
                 onClick={handleSendMessage}
-                className="ml-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                className="ml-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -188,12 +190,19 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-60 h-60 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-4000"></div>
+      </div>
+
       {/* Header */}
-      <div className="flex justify-between items-center p-6">
+      <div className="flex justify-between items-center p-6 relative z-10">
         <div className="flex items-center space-x-3">
-          <Brain className="h-8 w-8 text-purple-400" />
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+          <Brain className="h-8 w-8 text-purple-300" />
+          <div className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
             Mantrik
           </div>
         </div>
@@ -201,7 +210,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-300 hover:text-white hover:bg-gray-800"
+            className="text-purple-300 hover:text-white hover:bg-white/10"
           >
             <History className="h-5 w-5 mr-2" />
             Sessions
@@ -209,7 +218,7 @@ const Index = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-300 hover:text-white hover:bg-gray-800"
+            className="text-purple-300 hover:text-white hover:bg-white/10"
           >
             <User className="h-5 w-5 mr-2" />
             Profile
@@ -218,7 +227,7 @@ const Index = () => {
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-gray-300 hover:text-white hover:bg-gray-800"
+            className="text-purple-300 hover:text-white hover:bg-white/10"
           >
             <LogOut className="h-5 w-5" />
           </Button>
@@ -226,11 +235,11 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 relative z-10">
         {/* Central Orb */}
         <div className="relative mb-12">
-          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 p-1 animate-pulse">
-            <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center relative overflow-hidden">
+          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 p-1 animate-pulse shadow-2xl">
+            <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-45 transform translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm"></div>
             </div>
@@ -245,14 +254,14 @@ const Index = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   size="icon"
-                  className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 side="bottom" 
-                className="mt-2 bg-gray-800 border-gray-700"
+                className="mt-2 bg-white/10 border-white/20 backdrop-blur-md"
               >
                 {personalities.slice(0, 3).map((personality) => (
                   <DropdownMenuItem
@@ -260,14 +269,14 @@ const Index = () => {
                     onClick={() => handlePersonalityChange(personality.id)}
                     className={`cursor-pointer ${
                       selectedPersonality === personality.id 
-                        ? 'bg-purple-900/30' 
+                        ? 'bg-white/20' 
                         : ''
-                    } text-gray-200 hover:bg-gray-700`}
+                    } text-white hover:bg-white/15`}
                   >
                     <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
                     <div>
                       <div className="font-medium">{personality.name}</div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-purple-200">
                         {personality.description}
                       </div>
                     </div>
@@ -278,18 +287,18 @@ const Index = () => {
           </div>
 
           {/* Chat Input */}
-          <Card className="bg-gray-800/70 border-gray-700 backdrop-blur-sm">
+          <Card className="bg-white/10 border-white/20 backdrop-blur-md shadow-2xl">
             <div className="flex items-center p-4">
               <Input
                 placeholder="How are you feeling?"
-                className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:ring-0 focus:outline-none"
+                className="flex-1 bg-transparent border-none text-white placeholder-purple-300 focus:ring-0 focus:outline-none"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleStartSession()}
               />
               <Button
                 onClick={handleStartSession}
-                className="ml-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                className="ml-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
               >
                 <MessageCircle className="h-4 w-4" />
               </Button>
@@ -297,7 +306,7 @@ const Index = () => {
           </Card>
         </div>
 
-        <p className="text-sm mt-6 text-center max-w-md text-gray-400">
+        <p className="text-sm mt-6 text-center max-w-md text-purple-200">
           Start a conversation with your AI mentor. Share your thoughts, feelings, or ask for guidance.
         </p>
       </div>
