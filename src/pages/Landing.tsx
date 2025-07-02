@@ -255,7 +255,24 @@ const Landing = () => {
         .mentor-card p { color: var(--text-secondary); font-size: 1rem; line-height: 1.6; }
         
         .trust-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; }
-        .trust-visual { text-align: center; font-size: 15rem; line-height: 1; color: var(--accent-cyan); opacity: 0.1; }
+        .trust-visual { 
+          text-align: center; 
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .trust-visual img {
+          width: 280px;
+          height: 320px;
+          object-fit: contain;
+          filter: drop-shadow(0 0 30px rgba(0, 246, 255, 0.3));
+          animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
         .trust-content ul { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
         .trust-content li { display: flex; align-items: flex-start; gap: 1rem; }
         .trust-content .check-icon { flex-shrink: 0; margin-top: 5px; color: var(--accent-cyan); width: 24px; height: 24px; }
@@ -267,8 +284,15 @@ const Landing = () => {
           padding: 2.5rem; border-radius: 8px; max-width: 700px; margin: 2rem auto;
           backdrop-filter: blur(5px);
         }
-        .testimonial-text { font-size: 1.5rem; line-height: 1.6; margin-bottom: 1.5rem; font-weight: 500; }
+        .testimonial-text { font-size: 1.3rem; line-height: 1.6; margin-bottom: 1.5rem; font-weight: 400; }
         .testimonial-author { color: var(--text-secondary); text-align: right; }
+        .testimonial-meta { 
+          color: var(--text-secondary); 
+          text-align: right; 
+          font-size: 0.9rem; 
+          margin-top: 0.5rem;
+          opacity: 0.8;
+        }
         
         .final-cta { text-align: center; }
         .final-cta h2 { font-size: 3rem; max-width: 600px; margin: 0 auto 1rem; line-height: 1.3;}
@@ -361,9 +385,10 @@ const Landing = () => {
         <section className="trust">
           <div className="container trust-grid">
             <div className="trust-visual reveal">
-              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-              </svg>
+              <img 
+                src="/lovable-uploads/cf9a1544-77e0-481b-8c3f-0542c1776b85.png" 
+                alt="Security Shield" 
+              />
             </div>
             <div className="trust-content reveal" data-delay="200">
               <h2 style={{textAlign: 'left', fontSize: '2.5rem', marginBottom: '2rem'}}>A Sanctuary For Your Thoughts.</h2>
@@ -410,12 +435,19 @@ const Landing = () => {
         <section className="testimonials">
           <h2 className="section-title reveal">Real People, Real Clarity</h2>
           <div className="testimonial-card reveal">
-            <p className="testimonial-text">"I was skeptical, but Mantrik feels different. It's not just a chatbot, it's a guide. It helped me untangle thoughts I didn't even know I had."</p>
-            <p className="testimonial-author">- Jessica M., Designer</p>
+            <p className="testimonial-text">"I've tried therapy apps before, but Mantrik actually gets it. When I told Jarvis about my work stress, it didn't just give me generic advice - it helped me break down exactly what was triggering my anxiety and gave me concrete steps. Three weeks in and I'm sleeping better."</p>
+            <p className="testimonial-author">- Sarah Chen, Product Manager</p>
+            <p className="testimonial-meta">Using Mantrik for 2 months</p>
           </div>
            <div className="testimonial-card reveal" data-delay="200">
-              <p className="testimonial-text">"Using 'Vegeta' before a big presentation has become my secret weapon. It cuts through the anxiety and helps me focus. A total game-changer."</p>
-              <p className="testimonial-author">- David L., Entrepreneur</p>
+              <p className="testimonial-text">"As someone who's skeptical of AI, I was hesitant. But during a panic attack at 2 AM, Calm Guru walked me through breathing exercises that actually worked. It felt like having a patient friend who never judges, never gets tired of listening. My therapist even noticed the improvement."</p>
+              <p className="testimonial-author">- Marcus Rodriguez, Graduate Student</p>
+              <p className="testimonial-meta">Started during finals week, still using daily</p>
+          </div>
+          <div className="testimonial-card reveal" data-delay="400">
+              <p className="testimonial-text">"I was going through a rough divorce and couldn't afford regular therapy sessions. Mantrik became my lifeline. The conversations felt so real that I sometimes forgot I was talking to AI. It helped me process emotions I didn't even know I had."</p>
+              <p className="testimonial-author">- Jennifer Park, Teacher</p>
+              <p className="testimonial-meta">6 months of daily conversations</p>
           </div>
         </section>
 
