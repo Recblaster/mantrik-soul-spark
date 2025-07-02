@@ -66,10 +66,18 @@ const Auth = () => {
         });
       } else {
         if (isSignUp) {
-          toast({
-            title: "Success",
-            description: "Account created successfully! Please check your email to confirm your account.",
-          });
+          if (result.needsEmailConfirmation) {
+            toast({
+              title: "Check Your Email",
+              description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+            });
+          } else {
+            toast({
+              title: "Welcome!",
+              description: "Account created successfully!",
+            });
+            navigate('/app');
+          }
         } else {
           toast({
             title: "Welcome back!",

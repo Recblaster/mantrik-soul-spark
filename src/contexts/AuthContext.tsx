@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any; user: User | null; needsEmailConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -75,11 +75,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       
-      console.log('Signup result:', { data: data?.user?.email, error });
-      return { error };
+      console.log('Signup result:', { data: data?.user?.email, error, needsConfirmation: !data?.session });
+      
+      // Return both error and user data for better handling
+      return { 
+        error, 
+        user: data?.user,
+        needsEmailConfirmation: !data?.session && !error
+      };
     } catch (err) {
       console.error('Signup error:', err);
-      return { error: err };
+      return { error: err, user: null, needsEmailConfirmation: false };
     }
   };
 
