@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { History, Calendar, Brain, MessageCircle } from "lucide-react";
+import { History, Calendar, Brain, MessageCircle, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
 
 interface Session {
@@ -28,7 +30,9 @@ export const SessionHistory = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const fetchSessions = async () => {
     if (!user) return;
@@ -56,6 +60,33 @@ export const SessionHistory = () => {
       fetchSessions();
     }
   }, [open, user]);
+
+  const deleteSession = async (sessionId: string) => {
+    setDeletingId(sessionId);
+    try {
+      const { error } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      toast({
+        title: "Session Deleted",
+        description: "The session has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete session. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const getSessionDuration = (startedAt: string, endedAt: string | null) => {
     const start = new Date(startedAt);
@@ -109,9 +140,45 @@ export const SessionHistory = () => {
                       <div className={`w-3 h-3 rounded-full ${personalities[session.personality_used]?.color || 'bg-gray-500'}`}></div>
                       {personalities[session.personality_used]?.name || session.personality_used}
                     </CardTitle>
-                    <Badge variant="secondary" className="text-xs bg-white/10 text-purple-200">
-                      {session.ended_at ? 'Completed' : 'Active'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs bg-white/10 text-purple-200">
+                        {session.ended_at ? 'Completed' : 'Active'}
+                      </Badge>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                            disabled={deletingId === session.id}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-gradient-to-br from-indigo-950/95 to-purple-950/95 border-purple-500/20 text-white backdrop-blur-md">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                              <Trash2 className="h-5 w-5 text-red-400" />
+                              Delete Session
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-purple-200">
+                              Are you sure you want to delete this session with {personalities[session.personality_used]?.name || session.personality_used}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => deleteSession(session.id)}
+                              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                            >
+                              Delete Session
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
