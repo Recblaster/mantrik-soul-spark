@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MessageCircle, History, User, Send, Settings, LogOut, Brain } from "lucide-react";
+import { MessageCircle, Send, Settings, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from "@/integrations/supabase/client";
+import { SessionHistory } from '@/components/SessionHistory';
+import { Profile } from '@/components/Profile';
+import { LogoutConfirmation } from '@/components/LogoutConfirmation';
 
 interface Personality {
   id: string;
@@ -27,6 +31,8 @@ const Index = () => {
   const [selectedPersonality, setSelectedPersonality] = useState('jarvis');
   const [message, setMessage] = useState('');
   const [isInSession, setIsInSession] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [messageCount, setMessageCount] = useState(0);
   const { toast } = useToast();
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -51,16 +57,58 @@ const Index = () => {
     return null;
   }
 
-  const handleStartSession = () => {
-    setIsInSession(true);
-    toast({
-      title: "Session Started",
-      description: "Your mentoring session has begun. How are you feeling today?",
-    });
+  const handleStartSession = async () => {
+    if (!user) return;
+    
+    try {
+      // Create a new session in the database
+      const { data, error } = await supabase
+        .from('sessions')
+        .insert({
+          user_id: user.id,
+          personality_used: selectedPersonality,
+          message_count: 0
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCurrentSessionId(data.id);
+      setMessageCount(0);
+      setIsInSession(true);
+      toast({
+        title: "Session Started",
+        description: `Your mentoring session with ${personalities.find(p => p.id === selectedPersonality)?.name} has begun!`,
+      });
+    } catch (error) {
+      console.error('Error starting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start session. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim() || !currentSessionId) return;
+    
+    const newMessageCount = messageCount + 1;
+    setMessageCount(newMessageCount);
+    
+    try {
+      // Update session message count
+      await supabase
+        .from('sessions')
+        .update({ 
+          message_count: newMessageCount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentSessionId);
+    } catch (error) {
+      console.error('Error updating session:', error);
+    }
     
     // In a real app, this would send to AI
     toast({
@@ -71,8 +119,44 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
+    // End current session if active
+    if (currentSessionId) {
+      try {
+        await supabase
+          .from('sessions')
+          .update({ 
+            ended_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentSessionId);
+      } catch (error) {
+        console.error('Error ending session:', error);
+      }
+    }
+    
     await signOut();
     navigate('/');
+  };
+
+  const handleEndSession = async () => {
+    if (currentSessionId) {
+      try {
+        await supabase
+          .from('sessions')
+          .update({ 
+            ended_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentSessionId);
+      } catch (error) {
+        console.error('Error ending session:', error);
+      }
+    }
+    
+    setIsInSession(false);
+    setCurrentSessionId(null);
+    setMessageCount(0);
+    setMessage('');
   };
 
   const handlePersonalityChange = (personalityId: string) => {
@@ -92,24 +176,17 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsInSession(false)}
+              onClick={handleEndSession}
               className="text-purple-300 hover:text-white hover:bg-white/10"
             >
-              ← Back
+              ← End Session
             </Button>
             <h1 className="text-xl font-semibold text-white">
               Session with {personalities.find(p => p.id === selectedPersonality)?.name}
             </h1>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="text-purple-300 hover:text-white hover:bg-white/10"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <LogoutConfirmation onConfirm={handleSignOut} />
           </div>
         </div>
 
@@ -207,30 +284,9 @@ const Index = () => {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-purple-300 hover:text-white hover:bg-white/10"
-          >
-            <History className="h-5 w-5 mr-2" />
-            Sessions
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-purple-300 hover:text-white hover:bg-white/10"
-          >
-            <User className="h-5 w-5 mr-2" />
-            Profile
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="text-purple-300 hover:text-white hover:bg-white/10"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <SessionHistory />
+          <Profile />
+          <LogoutConfirmation onConfirm={handleSignOut} />
         </div>
       </div>
 
