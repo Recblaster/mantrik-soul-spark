@@ -28,8 +28,7 @@ interface SessionSidebarProps {
 const personalities: Record<string, { name: string; color: string }> = {
   jarvis: { name: 'Jarvis', color: 'bg-blue-500' },
   'calm-guru': { name: 'Calm Guru', color: 'bg-green-500' },
-  vegeta: { name: 'Vegeta', color: 'bg-red-500' },
-  sage: { name: 'Sage', color: 'bg-purple-500' }
+  vegeta: { name: 'Vegeta', color: 'bg-red-500' }
 };
 
 export const SessionSidebar = ({ onSessionSelect, onClose, onNewSession, currentSessionId }: SessionSidebarProps) => {

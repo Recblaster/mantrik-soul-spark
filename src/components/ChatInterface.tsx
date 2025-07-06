@@ -115,7 +115,6 @@ export const ChatInterface = ({ sessionId, personality, personalityName, onBack 
       case 'jarvis': return 'from-blue-400 to-blue-600';
       case 'calm-guru': return 'from-green-400 to-green-600';
       case 'vegeta': return 'from-red-400 to-red-600';
-      case 'sage': return 'from-purple-400 to-purple-600';
       default: return 'from-gray-400 to-gray-600';
     }
   };

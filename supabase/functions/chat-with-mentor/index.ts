@@ -28,7 +28,7 @@ interface Database {
   };
 }
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const huggingFaceApiKey = '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';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -39,16 +39,13 @@ const corsHeaders = {
 
 const personalities = {
   jarvis: {
-    systemPrompt: `You are Jarvis, Tony Stark's witty and super intelligent AI assistant. You are sophisticated, quick-witted, and highly intelligent. You provide practical solutions with a touch of dry humor and British elegance. You're direct but polite, and you often make clever observations. Keep responses concise but impactful, and don't hesitate to add subtle wit when appropriate.`,
+    prompt: "You are Jarvis — a superintelligent, witty AI assistant like Iron Man's helper. You respond clearly, efficiently, and with a touch of sarcasm. User says: ",
   },
   'calm-guru': {
-    systemPrompt: `You are a Calm Guru, a peaceful and wise mentor who speaks gently and provides profound wisdom. You often share meaningful quotes, ancient wisdom, and thoughtful advice. Your responses should be calming, mindful, and filled with deep insights. You help people find inner peace and clarity. Speak slowly and thoughtfully, often incorporating quotes from great thinkers, philosophers, and spiritual leaders.`,
+    prompt: "You are Calm Guru — a wise, spiritual mentor who speaks slowly, peacefully, and deeply. You provide gentle advice with kindness and insight. Never rush. Use short, simple, calming sentences. User says: ",
   },
   vegeta: {
-    systemPrompt: `You are Vegeta, the Saiyan Prince from Dragon Ball Z. You are brutally honest, highly motivating, aggressive, competitive, and prideful. You push people to become stronger warriors and never accept weakness. You speak with intensity and pride, often referring to strength, power, and the warrior spirit. You're direct, sometimes harsh, but ultimately want to help people become their strongest selves. Use motivational language that challenges people to push beyond their limits.`,
-  },
-  sage: {
-    systemPrompt: `You are a wise Sage, contemplative and understanding. You provide deep philosophical insights and help people understand complex situations with wisdom and empathy. You're patient, thoughtful, and always see the bigger picture. Your responses are measured and profound, helping people gain perspective on their challenges.`,
+    prompt: "You are Vegeta from Dragon Ball Z. You are blunt, aggressive, and always push the user to be stronger. User says: ",
   }
 };
 
@@ -60,8 +57,8 @@ serve(async (req) => {
   try {
     const { message, personality, sessionId, userId } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!huggingFaceApiKey) {
+      throw new Error('Hugging Face API key not configured');
     }
 
     const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
@@ -80,40 +77,33 @@ serve(async (req) => {
       content: message,
     });
 
-    // Get conversation history for context
-    const { data: messages } = await supabase
-      .from('messages')
-      .select('role, content')
-      .eq('session_id', sessionId)
-      .order('created_at', { ascending: true })
-      .limit(10); // Keep last 10 messages for context
+    // Prepare the prompt with user input
+    const fullPrompt = personalityConfig.prompt + message;
 
-    // Prepare messages for OpenAI
-    const conversationMessages = [
-      { role: 'system', content: personalityConfig.systemPrompt },
-      ...(messages || []).map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-    ];
-
-    // Call OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Hugging Face API
+    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${huggingFaceApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: conversationMessages,
-        max_tokens: 500,
-        temperature: personality === 'vegeta' ? 0.9 : personality === 'calm-guru' ? 0.3 : 0.7,
+        inputs: fullPrompt,
       }),
     });
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    console.log('Hugging Face response:', data);
+
+    // Extract the generated text
+    let aiResponse = '';
+    if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
+      aiResponse = data[0].generated_text.replace(fullPrompt, '').trim();
+    } else if (data.generated_text) {
+      aiResponse = data.generated_text.replace(fullPrompt, '').trim();
+    } else {
+      throw new Error('Unexpected response format from Hugging Face API');
+    }
 
     // Save AI response to database
     await supabase.from('messages').insert({
