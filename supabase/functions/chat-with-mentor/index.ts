@@ -28,7 +28,7 @@ interface Database {
   };
 }
 
-const huggingFaceApiKey = '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';
+const geminiApiKey = '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';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -57,8 +57,8 @@ serve(async (req) => {
   try {
     const { message, personality, sessionId, userId } = await req.json();
 
-    if (!huggingFaceApiKey) {
-      throw new Error('Hugging Face API key not configured');
+    if (!geminiApiKey) {
+      throw new Error('Gemini API key not configured');
     }
 
     const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
@@ -80,29 +80,35 @@ serve(async (req) => {
     // Prepare the prompt with user input
     const fullPrompt = personalityConfig.prompt + message;
 
-    // Call Hugging Face API
-    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct', {
+    // Call Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${huggingFaceApiKey}`,
+        'Authorization': `Bearer ${geminiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: fullPrompt,
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
       }),
     });
 
     const data = await response.json();
-    console.log('Hugging Face response:', data);
+    console.log('Gemini response:', data);
 
     // Extract the generated text
     let aiResponse = '';
-    if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
-      aiResponse = data[0].generated_text.replace(fullPrompt, '').trim();
-    } else if (data.generated_text) {
-      aiResponse = data.generated_text.replace(fullPrompt, '').trim();
+    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+      aiResponse = data.candidates[0].content.parts[0].text;
     } else {
-      throw new Error('Unexpected response format from Hugging Face API');
+      throw new Error('Unexpected response format from Gemini API');
     }
 
     // Save AI response to database
