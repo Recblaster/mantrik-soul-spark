@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MessageCircle, Send, Settings, Brain } from "lucide-react";
+import { MessageCircle, Send, Settings, Brain, Menu } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from "@/integrations/supabase/client";
-import { SessionHistory } from '@/components/SessionHistory';
 import { Profile } from '@/components/Profile';
 import { LogoutConfirmation } from '@/components/LogoutConfirmation';
+import { ChatInterface } from '@/components/ChatInterface';
+import { SessionSidebar } from '@/components/SessionSidebar';
 
 interface Personality {
   id: string;
@@ -30,9 +31,8 @@ const personalities: Personality[] = [
 const Index = () => {
   const [selectedPersonality, setSelectedPersonality] = useState('jarvis');
   const [message, setMessage] = useState('');
-  const [isInSession, setIsInSession] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [messageCount, setMessageCount] = useState(0);
+  const [showSessions, setShowSessions] = useState(false);
   const { toast } = useToast();
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -61,7 +61,6 @@ const Index = () => {
     if (!user) return;
     
     try {
-      // Create a new session in the database
       const { data, error } = await supabase
         .from('sessions')
         .insert({
@@ -75,8 +74,6 @@ const Index = () => {
       if (error) throw error;
       
       setCurrentSessionId(data.id);
-      setMessageCount(0);
-      setIsInSession(true);
       toast({
         title: "Session Started",
         description: `Your mentoring session with ${personalities.find(p => p.id === selectedPersonality)?.name} has begun!`,
@@ -91,35 +88,7 @@ const Index = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !currentSessionId) return;
-    
-    const newMessageCount = messageCount + 1;
-    setMessageCount(newMessageCount);
-    
-    try {
-      // Update session message count
-      await supabase
-        .from('sessions')
-        .update({ 
-          message_count: newMessageCount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', currentSessionId);
-    } catch (error) {
-      console.error('Error updating session:', error);
-    }
-    
-    // In a real app, this would send to AI
-    toast({
-      title: "Message Sent",
-      description: "Your mentor is thinking...",
-    });
-    setMessage('');
-  };
-
   const handleSignOut = async () => {
-    // End current session if active
     if (currentSessionId) {
       try {
         await supabase
@@ -138,24 +107,20 @@ const Index = () => {
     navigate('/');
   };
 
-  const handleEndSession = async () => {
-    if (currentSessionId) {
-      try {
-        await supabase
-          .from('sessions')
-          .update({ 
-            ended_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', currentSessionId);
-      } catch (error) {
-        console.error('Error ending session:', error);
-      }
-    }
-    
-    setIsInSession(false);
+  const handleSessionSelect = (sessionId: string, personality: string) => {
+    setSelectedPersonality(personality);
+    setCurrentSessionId(sessionId);
+    setShowSessions(false);
+  };
+
+  const handleBackToHome = () => {
     setCurrentSessionId(null);
-    setMessageCount(0);
+    setMessage('');
+  };
+
+  const handleNewSession = () => {
+    setCurrentSessionId(null);
+    setShowSessions(false);
     setMessage('');
   };
 
@@ -167,124 +132,56 @@ const Index = () => {
     });
   };
 
-  if (isInSession) {
+  // If we're in a chat session, show the chat interface
+  if (currentSessionId) {
+    const selectedPersonalityObj = personalities.find(p => p.id === selectedPersonality);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-white/20 bg-white/5 backdrop-blur-sm">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleEndSession}
-              className="text-purple-300 hover:text-white hover:bg-white/10"
-            >
-              ← End Session
-            </Button>
-            <h1 className="text-xl font-semibold text-white">
-              Session with {personalities.find(p => p.id === selectedPersonality)?.name}
-            </h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            <LogoutConfirmation onConfirm={handleSignOut} />
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 p-6 pb-16">
-          <div className="max-w-3xl mx-auto space-y-4">
-            <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 mb-4 shadow-2xl">
-                <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse"></div>
-              </div>
-              <p className="text-purple-100 text-lg">
-                How are you feeling today? I'm here to listen and guide you.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Presets Button */}
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-10">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              side="top" 
-              className="mb-2 bg-white/10 border-white/20 backdrop-blur-md"
-            >
-              {personalities.slice(0, 3).map((personality) => (
-                <DropdownMenuItem
-                  key={personality.id}
-                  onClick={() => handlePersonalityChange(personality.id)}
-                  className={`cursor-pointer ${
-                    selectedPersonality === personality.id 
-                      ? 'bg-white/20' 
-                      : ''
-                  } text-white hover:bg-white/15`}
-                >
-                  <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
-                  <div>
-                    <div className="font-medium">{personality.name}</div>
-                    <div className="text-sm text-purple-200">
-                      {personality.description}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Chat Input */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/5 backdrop-blur-sm border-t border-white/20">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-center p-2">
-              <Input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="How are you feeling?"
-                className="flex-1 bg-white/10 border-white/20 text-white placeholder-purple-300 focus:ring-purple-400 focus:border-purple-400 backdrop-blur-sm"
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              />
-              <Button
-                onClick={handleSendMessage}
-                className="ml-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatInterface
+        sessionId={currentSessionId}
+        personality={selectedPersonality}
+        personalityName={selectedPersonalityObj?.name || selectedPersonality}
+        onBack={handleBackToHome}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+      {/* Session Sidebar */}
+      {showSessions && (
+        <SessionSidebar
+          onSessionSelect={handleSessionSelect}
+          onClose={() => setShowSessions(false)}
+          onNewSession={handleNewSession}
+          currentSessionId={currentSessionId}
+        />
+      )}
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-60 h-60 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gray-600 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gray-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-60 h-60 bg-gray-700 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-4000"></div>
       </div>
 
       {/* Header */}
       <div className="flex justify-between items-center p-6 relative z-10">
         <div className="flex items-center space-x-3">
-          <Brain className="h-8 w-8 text-purple-300" />
-          <div className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+          <Brain className="h-8 w-8 text-gray-300" />
+          <div className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
             Mantrik
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <SessionHistory />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowSessions(true)}
+            className="text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <Menu className="h-5 w-5 mr-2" />
+            Sessions
+          </Button>
           <Profile />
           <LogoutConfirmation onConfirm={handleSignOut} />
         </div>
@@ -294,8 +191,8 @@ const Index = () => {
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 relative z-10">
         {/* Central Orb */}
         <div className="relative mb-12">
-          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 p-1 animate-pulse shadow-2xl">
-            <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center relative overflow-hidden">
+          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-gray-400 via-gray-300 to-gray-500 p-1 animate-pulse shadow-2xl">
+            <div className="w-full h-full rounded-full bg-gradient-to-r from-gray-500 to-gray-400 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-45 transform translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm"></div>
             </div>
@@ -310,29 +207,29 @@ const Index = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   size="icon"
-                  className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white shadow-lg"
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 side="bottom" 
-                className="mt-2 bg-white/10 border-white/20 backdrop-blur-md"
+                className="mt-2 bg-gray-800 border-gray-600 backdrop-blur-md"
               >
-                {personalities.slice(0, 3).map((personality) => (
+                {personalities.map((personality) => (
                   <DropdownMenuItem
                     key={personality.id}
                     onClick={() => handlePersonalityChange(personality.id)}
                     className={`cursor-pointer ${
                       selectedPersonality === personality.id 
-                        ? 'bg-white/20' 
+                        ? 'bg-gray-700' 
                         : ''
-                    } text-white hover:bg-white/15`}
+                    } text-white hover:bg-gray-700`}
                   >
                     <div className={`w-3 h-3 rounded-full ${personality.color} mr-3`}></div>
                     <div>
                       <div className="font-medium">{personality.name}</div>
-                      <div className="text-sm text-purple-200">
+                      <div className="text-sm text-gray-300">
                         {personality.description}
                       </div>
                     </div>
@@ -343,18 +240,18 @@ const Index = () => {
           </div>
 
           {/* Chat Input */}
-          <Card className="bg-white/10 border-white/20 backdrop-blur-md shadow-2xl">
+          <Card className="bg-gray-800/40 border-gray-600 backdrop-blur-md shadow-2xl">
             <div className="flex items-center p-4">
               <Input
                 placeholder="How are you feeling?"
-                className="flex-1 bg-transparent border-none text-white placeholder-purple-300 focus:ring-0 focus:outline-none"
+                className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:ring-0 focus:outline-none"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleStartSession()}
               />
               <Button
                 onClick={handleStartSession}
-                className="ml-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                className="ml-4 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
               >
                 <MessageCircle className="h-4 w-4" />
               </Button>
@@ -362,7 +259,7 @@ const Index = () => {
           </Card>
         </div>
 
-        <p className="text-sm mt-6 text-center max-w-md text-purple-200">
+        <p className="text-sm mt-6 text-center max-w-md text-gray-300">
           Start a conversation with your AI mentor. Share your thoughts, feelings, or ask for guidance.
         </p>
       </div>

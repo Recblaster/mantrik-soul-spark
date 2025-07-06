@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -41,11 +42,38 @@ export const Profile = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
-      setDisplayName(data.display_name || '');
+      if (error) {
+        // If profile doesn't exist, create it
+        if (error.code === 'PGRST116') {
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profile')
+            .insert({
+              user_id: user.id,
+              display_name: null,
+              avatar_url: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (createError) throw createError;
+          setProfile(newProfile);
+          setDisplayName('');
+        } else {
+          throw error;
+        }
+      } else {
+        setProfile(data);
+        setDisplayName(data.display_name || '');
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -103,43 +131,43 @@ export const Profile = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="text-purple-300 hover:text-white hover:bg-white/10"
+          className="text-gray-300 hover:text-white hover:bg-gray-700"
         >
           <User className="h-5 w-5 mr-2" />
           Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md bg-gradient-to-br from-indigo-950/90 to-purple-950/90 border-purple-500/20 text-white backdrop-blur-md">
+      <DialogContent className="max-w-md bg-gray-800 border-gray-600 text-white backdrop-blur-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <User className="h-6 w-6 text-purple-400" />
+            <User className="h-6 w-6 text-gray-400" />
             My Profile
           </DialogTitle>
         </DialogHeader>
         
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
           </div>
         ) : profile && user ? (
           <div className="space-y-6">
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
-              <Avatar className="w-20 h-20 border-2 border-purple-400/50">
+              <Avatar className="w-20 h-20 border-2 border-gray-500">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-lg font-semibold">
+                <AvatarFallback className="bg-gradient-to-br from-gray-500 to-gray-600 text-white text-lg font-semibold">
                   {getInitials(user.email || '', profile.display_name)}
                 </AvatarFallback>
               </Avatar>
-              <Badge variant="secondary" className="bg-white/10 text-purple-200">
+              <Badge variant="secondary" className="bg-gray-700 text-gray-200">
                 Member since {format(new Date(profile.created_at), 'MMM yyyy')}
               </Badge>
             </div>
 
-            <Separator className="bg-white/10" />
+            <Separator className="bg-gray-600" />
 
             {/* Profile Information */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-gray-700 border-gray-600">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-sm">
                   <span>Profile Information</span>
@@ -148,7 +176,7 @@ export const Profile = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setEditing(true)}
-                      className="h-8 w-8 p-0 hover:bg-white/10"
+                      className="h-8 w-8 p-0 hover:bg-gray-600"
                     >
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -180,37 +208,37 @@ export const Profile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-sm text-purple-300">Display Name</Label>
+                  <Label className="text-sm text-gray-300">Display Name</Label>
                   {editing ? (
                     <Input
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="Enter your display name"
-                      className="bg-white/5 border-white/20 text-white placeholder-purple-300"
+                      className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
                     />
                   ) : (
-                    <p className="text-sm py-2 px-3 bg-white/5 rounded-md border border-white/10">
+                    <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
                       {profile.display_name || 'Not set'}
                     </p>
                   )}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm text-purple-300 flex items-center gap-2">
+                  <Label className="text-sm text-gray-300 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Email
                   </Label>
-                  <p className="text-sm py-2 px-3 bg-white/5 rounded-md border border-white/10">
+                  <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
                     {user.email}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm text-purple-300 flex items-center gap-2">
+                  <Label className="text-sm text-gray-300 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     Last Updated
                   </Label>
-                  <p className="text-sm py-2 px-3 bg-white/5 rounded-md border border-white/10">
+                  <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
                     {format(new Date(profile.updated_at), 'MMM dd, yyyy h:mm a')}
                   </p>
                 </div>
@@ -218,7 +246,7 @@ export const Profile = () => {
             </Card>
           </div>
         ) : (
-          <div className="text-center py-8 text-purple-300">
+          <div className="text-center py-8 text-gray-400">
             <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Unable to load profile</p>
           </div>
