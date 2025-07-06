@@ -56,6 +56,7 @@ serve(async (req) => {
 
   try {
     const { message, personality, sessionId, userId } = await req.json();
+    console.log('Received request:', { message, personality, sessionId, userId });
 
     if (!geminiApiKey) {
       throw new Error('Gemini API key not configured');
@@ -70,21 +71,27 @@ serve(async (req) => {
     }
 
     // Save user message to database
-    await supabase.from('messages').insert({
+    console.log('Saving user message to database...');
+    const { error: insertError } = await supabase.from('messages').insert({
       session_id: sessionId,
       user_id: userId,
       role: 'user',
       content: message,
     });
 
+    if (insertError) {
+      console.error('Error saving user message:', insertError);
+      throw insertError;
+    }
+
     // Prepare the prompt with user input
     const fullPrompt = personalityConfig.prompt + message;
+    console.log('Calling Gemini API with prompt:', fullPrompt);
 
-    // Call Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent', {
+    // Call Gemini API with proper endpoint and headers
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + geminiApiKey, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${geminiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -100,24 +107,41 @@ serve(async (req) => {
       }),
     });
 
+    console.log('Gemini API response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error:', errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
-    console.log('Gemini response:', data);
+    console.log('Gemini response:', JSON.stringify(data, null, 2));
 
     // Extract the generated text
     let aiResponse = '';
     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
       aiResponse = data.candidates[0].content.parts[0].text;
     } else {
-      throw new Error('Unexpected response format from Gemini API');
+      // Fallback response if API doesn't return expected format
+      console.warn('Unexpected Gemini response format, using fallback');
+      aiResponse = "I'm here to help! Could you please rephrase your message?";
     }
 
+    console.log('AI Response:', aiResponse);
+
     // Save AI response to database
-    await supabase.from('messages').insert({
+    const { error: aiInsertError } = await supabase.from('messages').insert({
       session_id: sessionId,
       user_id: userId,
       role: 'assistant',
       content: aiResponse,
     });
+
+    if (aiInsertError) {
+      console.error('Error saving AI message:', aiInsertError);
+      throw aiInsertError;
+    }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
