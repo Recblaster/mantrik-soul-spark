@@ -28,7 +28,7 @@ interface Database {
   };
 }
 
-const geminiApiKey = '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';
+const openRouterApiKey = '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';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -58,8 +58,8 @@ serve(async (req) => {
     const { message, personality, sessionId, userId } = await req.json();
     console.log('Received request:', { message, personality, sessionId, userId });
 
-    if (!geminiApiKey) {
-      throw new Error('Gemini API key not configured');
+    if (!openRouterApiKey) {
+      throw new Error('OpenRouter API key not configured');
     }
 
     const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
@@ -86,45 +86,52 @@ serve(async (req) => {
 
     // Prepare the prompt with user input
     const fullPrompt = personalityConfig.prompt + message;
-    console.log('Calling Gemini API with prompt:', fullPrompt);
+    console.log('Calling OpenRouter API with prompt:', fullPrompt);
 
-    // Call Gemini API with proper endpoint and headers
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + geminiApiKey, {
+    // Call OpenRouter API with chat completions format
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://mantrik.lovable.app',
+        'X-Title': 'Mantrik AI Mentor'
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: fullPrompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        }
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [
+          {
+            role: 'system',
+            content: personalityConfig.prompt
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
       }),
     });
 
-    console.log('Gemini API response status:', response.status);
+    console.log('OpenRouter API response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', errorText);
-      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      console.error('OpenRouter API error:', errorText);
+      throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Gemini response:', JSON.stringify(data, null, 2));
+    console.log('OpenRouter response:', JSON.stringify(data, null, 2));
 
-    // Extract the generated text
+    // Extract the generated text from OpenAI-compatible response
     let aiResponse = '';
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-      aiResponse = data.candidates[0].content.parts[0].text;
+    if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+      aiResponse = data.choices[0].message.content;
     } else {
       // Fallback response if API doesn't return expected format
-      console.warn('Unexpected Gemini response format, using fallback');
+      console.warn('Unexpected OpenRouter response format, using fallback');
       aiResponse = "I'm here to help! Could you please rephrase your message?";
     }
 
