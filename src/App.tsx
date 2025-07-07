@@ -9,6 +9,9 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import JarvisChat from "./pages/JarvisChat";
+import CalmGuruChat from "./pages/CalmGuruChat";
+import VegetaChat from "./pages/VegetaChat";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +26,9 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/app" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/jarvis" element={<JarvisChat />} />
+            <Route path="/calm-guru" element={<CalmGuruChat />} />
+            <Route path="/vegeta" element={<VegetaChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
