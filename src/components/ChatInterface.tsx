@@ -119,45 +119,44 @@ export const ChatInterface = ({ sessionId, personality, personalityName, onBack 
     }
   };
 
+  const getPersonalityIcon = (personality: string) => {
+    switch (personality) {
+      case 'jarvis': return '🤖';
+      case 'calm-guru': return '🧘';
+      case 'vegeta': return '⚡';
+      default: return '💭';
+    }
+  };
+
+  const getWelcomeMessage = (personality: string) => {
+    switch (personality) {
+      case 'jarvis': return "Hello! I'm Jarvis, your superintelligent AI assistant. How can I help you today?";
+      case 'calm-guru': return "Welcome, dear friend. I am here to guide you toward inner peace. How may I help you today?";
+      case 'vegeta': return "Listen up! I'm Vegeta, and I'm here to push you beyond your limits. What do you need to overcome?";
+      default: return "How can I assist you today?";
+    }
+  };
+
   if (loadingMessages) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="text-xl">Loading conversation...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800/50 backdrop-blur-sm">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-gray-300 hover:text-white hover:bg-gray-700"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex items-center space-x-3">
-            <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${getPersonalityColor(personality)}`}></div>
-            <h1 className="text-xl font-semibold">{personalityName}</h1>
-          </div>
-        </div>
-      </div>
-
+    <>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 ? (
-            <div className="text-center py-8">
-              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${getPersonalityColor(personality)} mb-4`}>
-                <div className="w-8 h-8 rounded-full bg-white/20"></div>
+            <div className="text-center py-12">
+              <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r ${getPersonalityColor(personality)} mb-6 text-3xl`}>
+                {getPersonalityIcon(personality)}
               </div>
-              <p className="text-gray-300 text-lg">
-                Start a conversation with {personalityName}. How can I help you today?
+              <p className="text-gray-300 text-lg max-w-md mx-auto leading-relaxed">
+                {getWelcomeMessage(personality)}
               </p>
             </div>
           ) : (
@@ -168,24 +167,24 @@ export const ChatInterface = ({ sessionId, personality, personalityName, onBack 
               >
                 <Card className={`max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl p-4 ${
                   message.role === 'user' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-700 text-gray-100'
+                    ? `bg-gradient-to-r ${getPersonalityColor(personality)} text-white shadow-lg` 
+                    : 'bg-gray-700/80 text-gray-100 backdrop-blur-sm'
                 }`}>
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
                 </Card>
               </div>
             ))
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="max-w-xs sm:max-w-md p-4 bg-gray-700 text-gray-100">
-                <div className="flex items-center space-x-2">
+              <Card className="max-w-xs sm:max-w-md p-4 bg-gray-700/80 text-gray-100 backdrop-blur-sm">
+                <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className={`w-2 h-2 bg-gradient-to-r ${getPersonalityColor(personality)} rounded-full animate-bounce`}></div>
+                    <div className={`w-2 h-2 bg-gradient-to-r ${getPersonalityColor(personality)} rounded-full animate-bounce`} style={{ animationDelay: '0.1s' }}></div>
+                    <div className={`w-2 h-2 bg-gradient-to-r ${getPersonalityColor(personality)} rounded-full animate-bounce`} style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-gray-400">Thinking...</span>
+                  <span className="text-sm text-gray-300">{personalityName} is thinking...</span>
                 </div>
               </Card>
             </div>
@@ -196,24 +195,24 @@ export const ChatInterface = ({ sessionId, personality, personalityName, onBack 
 
       {/* Input */}
       <div className="p-4 border-t border-gray-700 bg-gray-800/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto flex items-center space-x-2">
+        <div className="max-w-4xl mx-auto flex items-center space-x-3">
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-gray-500 focus:border-gray-500"
+            placeholder={`Message ${personalityName}...`}
+            className="flex-1 bg-gray-700/80 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             disabled={isLoading}
           />
           <Button
             onClick={sendMessage}
             disabled={isLoading || !inputMessage.trim()}
-            className={`bg-gradient-to-r ${getPersonalityColor(personality)} hover:opacity-80 text-white`}
+            className={`bg-gradient-to-r ${getPersonalityColor(personality)} hover:opacity-80 text-white px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300`}
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
