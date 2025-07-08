@@ -295,7 +295,8 @@ const Index = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -306,7 +307,8 @@ const Index = () => {
             transform: translateY(0);
           }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
