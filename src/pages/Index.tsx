@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Brain, Menu } from "lucide-react";
+import { Brain, Menu, Sparkles, Zap, Leaf } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { Profile } from '@/components/Profile';
 import { LogoutConfirmation } from '@/components/LogoutConfirmation';
@@ -17,30 +17,42 @@ interface Personality {
   name: string;
   description: string;
   color: string;
+  gradient: string;
   tagline: string;
+  icon: any;
+  accent: string;
 }
 
 const personalities: Personality[] = [
   { 
     id: 'jarvis', 
     name: 'Jarvis', 
-    description: 'Smart, quick, and practical', 
-    color: 'bg-blue-500',
-    tagline: 'Your superintelligent AI assistant'
+    description: 'Smart, analytical, and efficient', 
+    color: 'from-blue-500 to-cyan-500',
+    gradient: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
+    tagline: 'Your superintelligent AI assistant',
+    icon: Brain,
+    accent: 'border-blue-500/20 hover:border-blue-500/40'
   },
   { 
     id: 'calm-guru', 
     name: 'Calm Guru', 
     description: 'Peaceful, mindful, and wise', 
-    color: 'bg-green-500',
-    tagline: 'Find inner peace and guidance'
+    color: 'from-green-500 to-emerald-500',
+    gradient: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10',
+    tagline: 'Find inner peace and guidance',
+    icon: Leaf,
+    accent: 'border-green-500/20 hover:border-green-500/40'
   },
   { 
     id: 'vegeta', 
     name: 'Vegeta', 
-    description: 'Fierce, motivating, and no-nonsense', 
-    color: 'bg-red-500',
-    tagline: 'Push your limits and become stronger'
+    description: 'Fierce, motivating, and powerful', 
+    color: 'from-red-500 to-orange-500',
+    gradient: 'bg-gradient-to-br from-red-500/10 to-orange-500/10',
+    tagline: 'Push your limits and become stronger',
+    icon: Zap,
+    accent: 'border-red-500/20 hover:border-red-500/40'
   }
 ];
 
@@ -61,7 +73,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -129,21 +141,23 @@ const Index = () => {
             currentSessionId={currentSessionId}
           />
         )}
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white flex flex-col">
           {/* Header with session controls */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800/50 backdrop-blur-sm">
+          <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-xl">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSidebar(true)}
-                className="text-gray-300 hover:text-white hover:bg-gray-700"
+                className="text-gray-300 hover:text-white hover:bg-white/10"
               >
                 <Menu className="h-4 w-4 mr-2" />
                 Sessions
               </Button>
               <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${selectedPersonalityData.color.replace('bg-', 'from-').replace('-500', '-400')} to-${selectedPersonalityData.color.replace('bg-', '').replace('-500', '-600')}`}></div>
+                <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${selectedPersonalityData.color} flex items-center justify-center`}>
+                  <selectedPersonalityData.icon className="h-4 w-4 text-white" />
+                </div>
                 <h1 className="text-xl font-semibold">{selectedPersonalityData.name}</h1>
               </div>
             </div>
@@ -167,20 +181,23 @@ const Index = () => {
 
   // Show personality selection
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-60 h-60 bg-green-600 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-cyan-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
       {/* Header */}
-      <div className="flex justify-between items-center p-6 relative z-10">
+      <div className="relative z-10 flex justify-between items-center p-6 border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="flex items-center space-x-3">
-          <Brain className="h-8 w-8 text-purple-400" />
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-            Mantrik
+          <div className="relative">
+            <Brain className="h-8 w-8 text-purple-400" />
+            <Sparkles className="h-4 w-4 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+          </div>
+          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+            Mantrik AI
           </div>
         </div>
         <div className="flex items-center space-x-4">
@@ -191,53 +208,105 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 relative z-10">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-88px)] px-6 py-12">
+        <div className="text-center mb-16 max-w-4xl">
+          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent leading-tight">
             Choose Your AI Mentor
           </h1>
-          <p className="text-gray-300 text-xl max-w-3xl leading-relaxed">
-            Select the personality that resonates with your current needs and start your journey of growth and guidance.
+          <p className="text-gray-300 text-xl leading-relaxed max-w-2xl mx-auto">
+            Select the perfect AI personality to guide your journey. Each mentor brings unique wisdom and perspective to help you grow.
           </p>
         </div>
 
         {/* Mentor Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl w-full">
-          {personalities.map((personality, index) => (
-            <Card 
-              key={personality.id}
-              className="group bg-gray-800/40 border-gray-600 backdrop-blur-md shadow-2xl p-8 text-center hover:scale-105 hover:bg-gray-700/50 transition-all duration-500 cursor-pointer relative overflow-hidden"
-              onClick={() => handlePersonalitySelect(personality.id)}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              {/* Gradient overlay on hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${personality.color.replace('bg-', 'from-').replace('-500', '-500/20')} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-              
-              <div className="relative z-10">
-                <div className={`w-24 h-24 rounded-full ${personality.color} mx-auto mb-6 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow duration-300`}>
-                  <div className="w-12 h-12 rounded-full bg-white/30 backdrop-blur-sm group-hover:bg-white/40 transition-colors duration-300"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl w-full">
+          {personalities.map((personality, index) => {
+            const IconComponent = personality.icon;
+            return (
+              <Card 
+                key={personality.id}
+                className={`group relative overflow-hidden bg-black/40 backdrop-blur-xl border ${personality.accent} transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 cursor-pointer ${personality.gradient}`}
+                onClick={() => handlePersonalitySelect(personality.id)}
+                style={{ 
+                  animationDelay: `${index * 0.2}s`,
+                  animation: 'fadeInUp 0.8s ease-out forwards'
+                }}
+              >
+                {/* Gradient overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${personality.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
+                
+                <div className="relative z-10 p-8 text-center">
+                  {/* Icon */}
+                  <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${personality.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                    <IconComponent className="h-10 w-10 text-white" />
+                  </div>
+                  
+                  {/* Content */}
+                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-gray-100 transition-colors duration-300">
+                    {personality.name}
+                  </h3>
+                  <p className={`text-transparent bg-clip-text bg-gradient-to-r ${personality.color} mb-4 text-lg font-medium`}>
+                    {personality.tagline}
+                  </p>
+                  <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+                    {personality.description}
+                  </p>
+                  
+                  {/* CTA Button */}
+                  <Button 
+                    className={`w-full bg-gradient-to-r ${personality.color} hover:opacity-90 hover:scale-105 text-white font-semibold py-3 text-base shadow-lg transition-all duration-300 border-0`}
+                  >
+                    Start Conversation
+                    <Sparkles className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-                
-                <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-gray-100 transition-colors duration-300">{personality.name}</h3>
-                <p className="text-gray-300 mb-4 text-lg font-medium">{personality.tagline}</p>
-                <p className="text-gray-400 text-sm mb-8 leading-relaxed">{personality.description}</p>
-                
-                <Button 
-                  className={`w-full bg-gradient-to-r ${personality.color.replace('bg-', 'from-').replace('-500', '-400')} to-${personality.color.replace('bg-', '').replace('-500', '-600')} hover:opacity-90 hover:scale-105 text-white font-semibold py-4 text-lg shadow-lg transition-all duration-300`}
-                >
-                  Start Conversation
-                </Button>
-              </div>
-            </Card>
-          ))}
+
+                {/* Decorative elements */}
+                <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${personality.color}`}></div>
+                </div>
+                <div className="absolute bottom-4 left-4 opacity-10 group-hover:opacity-30 transition-opacity duration-300">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${personality.color}`}></div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-400 text-sm">
-            Your conversations are saved and can be accessed anytime through Session History
+        {/* Footer info */}
+        <div className="mt-16 text-center">
+          <p className="text-gray-400 text-sm mb-4">
+            💬 Your conversations are automatically saved and accessible through Session History
           </p>
+          <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span>AI-Powered</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Secure</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <span>Personalized</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
