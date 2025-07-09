@@ -29,15 +29,15 @@ export const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Mess
   };
 
   return (
-    <div className="border-t border-gray-700 bg-gray-900 p-4">
+    <div className="border-t border-gray-200 bg-white p-4">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="relative">
-          <div className="flex items-end gap-3 bg-gray-800 border border-gray-600 rounded-xl p-3 focus-within:border-gray-500 transition-colors">
+          <div className="flex items-end gap-3 bg-white border border-gray-300 rounded-lg p-3 focus-within:border-gray-400 transition-colors shadow-sm">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white p-1 flex-shrink-0"
+              className="text-gray-500 hover:text-gray-700 p-1 flex-shrink-0"
             >
               <Paperclip className="h-4 w-4" />
             </Button>
@@ -48,7 +48,7 @@ export const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Mess
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={disabled}
-              className="flex-1 min-h-[24px] max-h-32 bg-transparent border-0 resize-none text-white placeholder-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              className="flex-1 min-h-[24px] max-h-32 bg-transparent border-0 resize-none text-gray-900 placeholder-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
               rows={1}
             />
             
@@ -56,7 +56,7 @@ export const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Mess
               type="submit"
               disabled={!message.trim() || disabled}
               size="sm"
-              className="bg-white text-black hover:bg-gray-200 disabled:bg-gray-600 disabled:text-gray-400 p-2 flex-shrink-0"
+              className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 p-2 flex-shrink-0 rounded-md"
             >
               <Send className="h-4 w-4" />
             </Button>

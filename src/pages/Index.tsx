@@ -34,10 +34,10 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-white rounded-full animate-spin"></div>
-          <div className="text-gray-300 text-sm">Loading...</div>
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="text-gray-600 text-sm">Loading...</div>
         </div>
       </div>
     );
@@ -94,10 +94,10 @@ const Index = () => {
   const selectedPersonalityData = selectedPersonality ? personalities[selectedPersonality] : null;
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+    <div className="flex h-screen bg-white text-gray-900 overflow-hidden">
       {/* Sidebar */}
       {showSidebar && (
-        <div className="w-64 bg-gray-900 border-r border-gray-700 flex flex-col">
+        <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
           <ChatSidebar
             onSessionSelect={handleSessionSelect}
             onNewSession={handleNewSession}
@@ -105,8 +105,8 @@ const Index = () => {
           />
           
           {/* User section at bottom */}
-          <div className="p-3 border-t border-gray-700 space-y-2">
-            <div className="flex items-center gap-3 p-2 hover:bg-gray-800 rounded-lg cursor-pointer">
+          <div className="p-3 border-t border-gray-200 space-y-2">
+            <div className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors">
               <Profile />
             </div>
             <LogoutConfirmation onConfirm={handleSignOut} />

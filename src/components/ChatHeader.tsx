@@ -10,20 +10,20 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ onToggleSidebar, showSidebar, personalityName }: ChatHeaderProps) => {
   return (
-    <div className="h-12 border-b border-gray-700 flex items-center justify-between px-4 bg-gray-900">
+    <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-white">
       <div className="flex items-center gap-3">
         {!showSidebar && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleSidebar}
-            className="text-gray-400 hover:text-white p-1"
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
           >
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="text-white font-medium">
-          {personalityName ? `${personalityName}` : 'ChatGPT'}
+        <h1 className="text-gray-900 font-semibold text-lg">
+          {personalityName ? `Chat with ${personalityName}` : 'ChatGPT'}
         </h1>
       </div>
       
@@ -31,7 +31,7 @@ export const ChatHeader = ({ onToggleSidebar, showSidebar, personalityName }: Ch
         <Button
           variant="ghost"
           size="sm"
-          className="text-gray-400 hover:text-white p-1"
+          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
         >
           <Edit3 className="h-4 w-4" />
         </Button>
