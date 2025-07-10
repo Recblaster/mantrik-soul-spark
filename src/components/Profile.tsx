@@ -117,7 +117,7 @@ export const Profile = () => {
   };
   return <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="hover:bg-gray-700 text-slate-50">
+        <Button variant="ghost" size="sm" className="text-slate-950 bg-emerald-100">
           <User className="h-5 w-5 mr-2" />
           Profile
         </Button>
