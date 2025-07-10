@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
-
 interface UserProfile {
   id: string;
   display_name: string | null;
@@ -21,42 +19,39 @@ interface UserProfile {
   created_at: string;
   updated_at: string;
 }
-
 export const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const fetchProfile = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('user_profile').select('*').eq('user_id', user.id).single();
       if (error) {
         // If profile doesn't exist, create it
         if (error.code === 'PGRST116') {
-          const { data: newProfile, error: createError } = await supabase
-            .from('user_profile')
-            .insert({
-              user_id: user.id,
-              display_name: null,
-              avatar_url: null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-
+          const {
+            data: newProfile,
+            error: createError
+          } = await supabase.from('user_profile').insert({
+            user_id: user.id,
+            display_name: null,
+            avatar_url: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).select().single();
           if (createError) throw createError;
           setProfile(newProfile);
           setDisplayName('');
@@ -78,27 +73,25 @@ export const Profile = () => {
       setLoading(false);
     }
   };
-
   const updateProfile = async () => {
     if (!user || !profile) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('user_profile')
-        .update({ 
-          display_name: displayName.trim() || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
-
+      const {
+        error
+      } = await supabase.from('user_profile').update({
+        display_name: displayName.trim() || null,
+        updated_at: new Date().toISOString()
+      }).eq('user_id', user.id);
       if (error) throw error;
-      
-      setProfile(prev => prev ? { ...prev, display_name: displayName.trim() || null } : null);
+      setProfile(prev => prev ? {
+        ...prev,
+        display_name: displayName.trim() || null
+      } : null);
       setEditing(false);
       toast({
         title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        description: "Your profile has been successfully updated."
       });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -111,28 +104,20 @@ export const Profile = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (open) {
       fetchProfile();
     }
   }, [open, user]);
-
   const getInitials = (email: string, name?: string | null) => {
     if (name && name.trim()) {
       return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     }
     return email.split('@')[0].slice(0, 2).toUpperCase();
   };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
+  return <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-gray-300 hover:text-white hover:bg-gray-700"
-        >
+        <Button variant="ghost" size="sm" className="hover:bg-gray-700 text-slate-50">
           <User className="h-5 w-5 mr-2" />
           Profile
         </Button>
@@ -145,12 +130,9 @@ export const Profile = () => {
           </DialogTitle>
         </DialogHeader>
         
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
+        {loading ? <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-          </div>
-        ) : profile && user ? (
-          <div className="space-y-6">
+          </div> : profile && user ? <div className="space-y-6">
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="w-20 h-20 border-2 border-gray-500">
@@ -171,56 +153,27 @@ export const Profile = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-sm">
                   <span>Profile Information</span>
-                  {!editing ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditing(true)}
-                      className="h-8 w-8 p-0 hover:bg-gray-600"
-                    >
+                  {!editing ? <Button variant="ghost" size="sm" onClick={() => setEditing(true)} className="h-8 w-8 p-0 hover:bg-gray-600">
                       <Edit3 className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={updateProfile}
-                        disabled={loading}
-                        className="h-8 w-8 p-0 hover:bg-green-500/20"
-                      >
+                    </Button> : <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={updateProfile} disabled={loading} className="h-8 w-8 p-0 hover:bg-green-500/20">
                         <Save className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditing(false);
-                          setDisplayName(profile.display_name || '');
-                        }}
-                        className="h-8 w-8 p-0 hover:bg-red-500/20"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => {
+                  setEditing(false);
+                  setDisplayName(profile.display_name || '');
+                }} className="h-8 w-8 p-0 hover:bg-red-500/20">
                         <X className="h-4 w-4" />
                       </Button>
-                    </div>
-                  )}
+                    </div>}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm text-gray-300">Display Name</Label>
-                  {editing ? (
-                    <Input
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Enter your display name"
-                      className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
-                    />
-                  ) : (
-                    <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
+                  {editing ? <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Enter your display name" className="bg-gray-600 border-gray-500 text-white placeholder-gray-400" /> : <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
                       {profile.display_name || 'Not set'}
-                    </p>
-                  )}
+                    </p>}
                 </div>
                 
                 <div className="space-y-2">
@@ -244,14 +197,10 @@ export const Profile = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-400">
+          </div> : <div className="text-center py-8 text-gray-400">
             <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Unable to load profile</p>
-          </div>
-        )}
+          </div>}
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
