@@ -15,6 +15,8 @@ import { format } from 'date-fns';
 interface UserProfile {
   id: string;
   display_name: string | null;
+  bio: string | null;
+  preferred_name: string | null;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
@@ -24,6 +26,8 @@ export const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
+  const [preferredName, setPreferredName] = useState('');
   const [open, setOpen] = useState(false);
   const {
     user
@@ -58,9 +62,13 @@ export const Profile = () => {
         } else {
           throw error;
         }
+          setBio(data.bio || '');
+          setPreferredName(data.preferred_name || '');
       } else {
         setProfile(data);
         setDisplayName(data.display_name || '');
+        setBio(data.bio || '');
+        setPreferredName(data.preferred_name || '');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -81,12 +89,16 @@ export const Profile = () => {
         error
       } = await supabase.from('user_profile').update({
         display_name: displayName.trim() || null,
+        bio: bio.trim() || null,
+        preferred_name: preferredName.trim() || null,
         updated_at: new Date().toISOString()
       }).eq('user_id', user.id);
       if (error) throw error;
       setProfile(prev => prev ? {
         ...prev,
-        display_name: displayName.trim() || null
+        display_name: displayName.trim() || null,
+        bio: bio.trim() || null,
+        preferred_name: preferredName.trim() || null
       } : null);
       setEditing(false);
       toast({
@@ -176,6 +188,20 @@ export const Profile = () => {
                     </p>}
                 </div>
                 
+                <div className="space-y-2">
+                  <Label className="text-sm text-gray-300">Preferred Name</Label>
+                  {editing ? <Input value={preferredName} onChange={e => setPreferredName(e.target.value)} placeholder="How you'd like to be addressed" className="bg-gray-600 border-gray-500 text-white placeholder-gray-400" /> : <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500">
+                      {profile.preferred_name || 'Not set'}
+                    </p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm text-gray-300">Bio</Label>
+                  {editing ? <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us a bit about yourself" className="w-full min-h-[80px] bg-gray-600 border-gray-500 text-white placeholder-gray-400 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" /> : <p className="text-sm py-2 px-3 bg-gray-600 rounded-md border border-gray-500 min-h-[80px]">
+                      {profile.bio || 'Not set'}
+                    </p>}
+                </div>
+
                 <div className="space-y-2">
                   <Label className="text-sm text-gray-300 flex items-center gap-2">
                     <Mail className="h-4 w-4" />

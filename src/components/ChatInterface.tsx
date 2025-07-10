@@ -1,5 +1,9 @@
 
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -7,6 +11,7 @@ import { Send, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from "@/integrations/supabase/client";
+import { format } from 'date-fns';
 
 interface Message {
   id: string;
@@ -170,7 +175,55 @@ export const ChatInterface = ({ sessionId, personality, personalityName, onBack 
                     ? `bg-gradient-to-r ${getPersonalityColor(personality)} text-white shadow-lg` 
                     : 'bg-gray-700/80 text-gray-100 backdrop-blur-sm'
                 }`}>
-                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <div className="space-y-2">
+                    {message.role === 'user' ? (
+                      <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    ) : (
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            code: ({ inline, children, ...props }) => 
+                              inline ? (
+                                <code className="bg-gray-600/50 px-1 py-0.5 rounded text-sm" {...props}>
+                                  {children}
+                                </code>
+                              ) : (
+                                <pre className="bg-gray-600/50 p-3 rounded-lg overflow-x-auto">
+                                  <code {...props}>{children}</code>
+                                </pre>
+                              ),
+                            ul: ({ children }) => <ul className="list-disc list-inside space-y-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside space-y-1">{children}</ol>,
+                            li: ({ children }) => <li className="text-gray-100">{children}</li>,
+                            h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                            blockquote: ({ children }) => (
+                              <blockquote className="border-l-4 border-gray-500 pl-4 italic">{children}</blockquote>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-600/30">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-6 h-6 rounded-full bg-gradient-to-r ${getPersonalityColor(personality)} flex items-center justify-center text-xs`}>
+                          {message.role === 'user' ? 'U' : getPersonalityIcon(personality)}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {message.role === 'user' ? 'You' : personalityName}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {format(new Date(message.created_at), 'HH:mm')}
+                      </span>
+                    </div>
+                  </div>
                 </Card>
               </div>
             ))
